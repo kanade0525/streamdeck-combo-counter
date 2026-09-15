@@ -1,14 +1,14 @@
 {
   "SDKVersion": 2,
   "UUID": "com.kanade0525.pulse",
-  "Name": "Pulse",
+  "Name": "Combo Counter",
   "Version": "0.1.0.0",
   "Author": "kanade ishida",
   "Description": "PC全体の操作（打鍵・クリック）を数え、途切れずに続いた回数をコンボとして表示します。数えるのは件数だけで、どのキーが押されたかは読み取りません。",
-  "Category": "Pulse",
+  "Category": "Combo Counter",
   "CategoryIcon": "imgs/category",
   "Icon": "imgs/plugin",
-  "URL": "https://github.com/kanade0525/streamdeck-pulse",
+  "URL": "https://github.com/kanade0525/streamdeck-combo-counter",
   "CodePath": "bin/plugin.js",
   "Nodejs": {
     "Version": "20"
@@ -20,6 +20,10 @@
     {
       "Platform": "mac",
       "MinimumVersion": "12"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
     }
   ],
   "Actions": [

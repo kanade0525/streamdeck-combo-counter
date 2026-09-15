@@ -116,7 +116,7 @@ const saveSoon = () => {
 
 // ---- 入力ヘルパ ----
 const source = new InputSource({
-  binary: InputSource.binaryPath(ROOT),
+  binary: InputSource.command(ROOT),
   logger,
   onInput: () => {
     state.input();

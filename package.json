@@ -1,5 +1,5 @@
 {
-  "name": "streamdeck-pulse",
+  "name": "streamdeck-combo-counter",
   "version": "0.1.0",
   "private": true,
   "description": "PC全体の操作を数え、途切れずに続いた回数をコンボとして Stream Deck に出す",
@@ -12,5 +12,7 @@
     "link": "sh scripts/link.sh",
     "pack": "sh scripts/pack.sh"
   },
-  "engines": { "node": ">=20.5.1" }
+  "engines": {
+    "node": ">=20.5.1"
+  }
 }
