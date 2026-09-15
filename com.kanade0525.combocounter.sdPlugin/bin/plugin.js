@@ -134,7 +134,7 @@ const source = new InputSource({
 // ---- アクション ----
 class ComboAction extends SingletonAction {
   // デコレータは manifestId を持つサブクラスを返すだけなので、素のJSではこう書けばよい
-  manifestId = 'com.kanade0525.pulse.combo';
+  manifestId = 'com.kanade0525.combocounter.combo';
 
   onWillAppear(ev) {
     ev.action.setTitle('');

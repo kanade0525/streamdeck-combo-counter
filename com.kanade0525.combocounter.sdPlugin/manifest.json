@@ -1,6 +1,6 @@
 {
   "SDKVersion": 2,
-  "UUID": "com.kanade0525.pulse",
+  "UUID": "com.kanade0525.combocounter",
   "Name": "Combo Counter",
   "Version": "0.1.0.0",
   "Author": "kanade ishida",
@@ -28,7 +28,7 @@
   ],
   "Actions": [
     {
-      "UUID": "com.kanade0525.pulse.combo",
+      "UUID": "com.kanade0525.combocounter.combo",
       "Name": "コンボカウンタ",
       "Icon": "imgs/action",
       "Tooltip": "打鍵とクリックを数え、途切れずに続いた回数をコンボとして出す。押すと表示を切替。",

@@ -1,7 +1,7 @@
 // コンボの状態機械の検査。時計を差し替えて、時間に依存する判断を機械で確かめる。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ComboState, levelOf } from '../com.kanade0525.pulse.sdPlugin/bin/combo-state.js';
+import { ComboState, levelOf } from '../com.kanade0525.combocounter.sdPlugin/bin/combo-state.js';
 
 /** 時計を手で進められる状態機械を作る */
 const make = (window = 3000) => {

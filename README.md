@@ -45,7 +45,7 @@ power-mode はエディタの中でしか効かず、しかも画面を汚しま
 ネットワークには一切つなぎません。
 
 ヘルパの実装は [`src/tap-counter.swift`](src/tap-counter.swift)（macOS）と
-[`com.kanade0525.pulse.sdPlugin/bin/tap-counter.ps1`](com.kanade0525.pulse.sdPlugin/bin/tap-counter.ps1)（Windows）で、
+[`com.kanade0525.combocounter.sdPlugin/bin/tap-counter.ps1`](com.kanade0525.combocounter.sdPlugin/bin/tap-counter.ps1)（Windows）で、
 どちらも数十行です。**全部読んでから入れてください。**
 
 ### 数えないもの
@@ -141,7 +141,7 @@ npm run pack           # 配布用の .streamDeckPlugin を作る
 Release に添えます。
 
 ```
-com.kanade0525.pulse.sdPlugin/
+com.kanade0525.combocounter.sdPlugin/
   bin/combo-state.js    コンボの状態機械（Stream Deck も描画も知らない。ここが検査の対象）
   bin/draw.js           SVG の組み立て
   bin/input-source.js   ヘルパの起動と監視

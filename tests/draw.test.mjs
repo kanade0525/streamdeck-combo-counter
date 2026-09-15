@@ -2,7 +2,7 @@
 // 「壊れた SVG を出さない」「値が絵に反映される」の2点だけを押さえる。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { comboImage, needsPermissionImage, mix } from '../com.kanade0525.pulse.sdPlugin/bin/draw.js';
+import { comboImage, needsPermissionImage, mix } from '../com.kanade0525.combocounter.sdPlugin/bin/draw.js';
 
 const base = {
   mode: 0, combo: 7, best: 42, todayTotal: 1234, perMinute: 60, brokenValue: 0,

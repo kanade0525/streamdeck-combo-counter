@@ -102,7 +102,7 @@ const make = (size, { plate, ink }) => (x, y) => {
   return a === 0 ? [0, 0, 0, 0] : [Math.round(r / (a / 255)), Math.round(g / (a / 255)), Math.round(b / (a / 255)), Math.round(a / n)];
 };
 
-const out = 'com.kanade0525.pulse.sdPlugin/imgs';
+const out = 'com.kanade0525.combocounter.sdPlugin/imgs';
 mkdirSync(out, { recursive: true });
 
 const files = [

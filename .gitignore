@@ -3,3 +3,4 @@ logs/
 *.streamDeckPlugin
 com.kanade0525.pulse.sdPlugin/bin/tap-counter
 .DS_Store
+docs/

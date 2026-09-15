@@ -2,7 +2,7 @@
 // 実際に起動はしない（機械が持っていない OS の分も確かめたいため）。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { InputSource } from '../com.kanade0525.pulse.sdPlugin/bin/input-source.js';
+import { InputSource } from '../com.kanade0525.combocounter.sdPlugin/bin/input-source.js';
 
 test('いまの OS 向けの起動の仕方が組み立てられる', () => {
   const c = InputSource.command('/plugin');
