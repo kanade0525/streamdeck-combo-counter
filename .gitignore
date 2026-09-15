@@ -1,6 +1,6 @@
 node_modules/
 logs/
 *.streamDeckPlugin
-com.kanade0525.pulse.sdPlugin/bin/tap-counter
+com.kanade0525.combocounter.sdPlugin/bin/tap-counter
 .DS_Store
 docs/
