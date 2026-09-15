@@ -1,0 +1,42 @@
+{
+  "SDKVersion": 2,
+  "Name": "Pulse",
+  "Version": "0.1.0.0",
+  "Author": "kanade ishida",
+  "Description": "PC全体の操作（打鍵・クリック）を数え、途切れずに続いた回数をコンボとして表示します。数えるのは件数だけで、どのキーが押されたかは読み取りません。",
+  "Category": "Pulse",
+  "CategoryIcon": "imgs/category",
+  "Icon": "imgs/plugin",
+  "URL": "https://github.com/kanade0525/streamdeck-pulse",
+  "CodePath": "bin/plugin.js",
+  "Nodejs": {
+    "Version": "20"
+  },
+  "Software": {
+    "MinimumVersion": "6.5"
+  },
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "12"
+    }
+  ],
+  "Actions": [
+    {
+      "UUID": "com.kanade0525.pulse.combo",
+      "Name": "コンボカウンタ",
+      "Icon": "imgs/action",
+      "Tooltip": "打鍵とクリックを数え、途切れずに続いた回数をコンボとして出す。押すと表示を切替。",
+      "Controllers": [
+        "Keypad"
+      ],
+      "DisableAutomaticStates": true,
+      "States": [
+        {
+          "Image": "imgs/key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    }
+  ]
+}
