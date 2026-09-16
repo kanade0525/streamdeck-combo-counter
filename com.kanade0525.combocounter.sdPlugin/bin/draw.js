@@ -78,15 +78,16 @@ export const comboImage = (v) => {
 </svg>`;
 };
 
-/** 権限が無い時の画面。押せば解決できることが分かるようにする */
+// 権限が無い時の画面。押せば解決できることが分かるようにする。
+// 文字は英語にしてある（Marketplace の提出要件が英語のため）
 export const needsPermissionImage = () => `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72">
   <rect width="72" height="72" rx="10" fill="${BG}"/>
   <rect x="26" y="22" width="20" height="15" rx="3" fill="none" stroke="#ffa94d" stroke-width="3"/>
   <path d="M30 22 v-4 a6 6 0 0 1 12 0 v4" fill="none" stroke="#ffa94d" stroke-width="3"/>
   <text x="36" y="50" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
-        font-size="9" font-weight="700" fill="#ffa94d">許可が要る</text>
+        font-size="9" font-weight="700" fill="#ffa94d">PERMISSION</text>
   <text x="36" y="62" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
-        font-size="8" fill="${MUTED}">押すと設定へ</text>
+        font-size="8" fill="${MUTED}">press to open</text>
 </svg>`;
 
 export const dataUri = (svg) =>

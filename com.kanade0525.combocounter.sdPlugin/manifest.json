@@ -4,7 +4,7 @@
   "Name": "Combo Counter",
   "Version": "0.1.0.0",
   "Author": "kanade ishida",
-  "Description": "PC全体の操作（打鍵・クリック）を数え、途切れずに続いた回数をコンボとして表示します。数えるのは件数だけで、どのキーが押されたかは読み取りません。",
+  "Description": "Counts your keystrokes and clicks, and shows how many you have made without pausing. Only the count is measured; which key was pressed is never read.",
   "Category": "Combo Counter",
   "CategoryIcon": "imgs/category",
   "Icon": "imgs/plugin",
@@ -29,9 +29,9 @@
   "Actions": [
     {
       "UUID": "com.kanade0525.combocounter.combo",
-      "Name": "コンボカウンタ",
+      "Name": "Combo Counter",
       "Icon": "imgs/action",
-      "Tooltip": "打鍵とクリックを数え、途切れずに続いた回数をコンボとして出す。押すと表示を切替。",
+      "Tooltip": "Shows your current combo of keystrokes and clicks. Press to switch what is displayed.",
       "Controllers": [
         "Keypad"
       ],

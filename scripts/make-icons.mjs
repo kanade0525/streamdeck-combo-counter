@@ -28,10 +28,10 @@ const chunk = (type, data) => {
   crc.writeUInt32BE(crc32(body));
   return Buffer.concat([len, body, crc]);
 };
-const png = (size, sample) => {
-  const raw = Buffer.alloc(size * (size * 4 + 1));
+const png = (size, sample, height = size) => {
+  const raw = Buffer.alloc(height * (size * 4 + 1));
   let p = 0;
-  for (let y = 0; y < size; y++) {
+  for (let y = 0; y < height; y++) {
     raw[p++] = 0;
     for (let x = 0; x < size; x++) {
       const [r, g, b, a] = sample(x, y);
@@ -40,7 +40,7 @@ const png = (size, sample) => {
   }
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(size, 0);
-  ihdr.writeUInt32BE(size, 4);
+  ihdr.writeUInt32BE(height, 4);
   ihdr[8] = 8;
   ihdr[9] = 6;
   return Buffer.concat([
@@ -83,13 +83,16 @@ const HW = 0.24, H = 0.13, T = 0.085;
  * @param {boolean} opts.plate 暗い角丸の下地を敷くか（キーやプラグインの絵）
  * @param {number[]|null} opts.ink 単色で描く時の色。null なら段の色を使う
  */
-const make = (size, { plate, ink }) => (x, y) => {
+const make = (size, { plate, ink, height }) => (x, y) => {
+  const imgH = height ?? size;
   const S = 4; // 多重標本。縁をならす
   let r = 0, g = 0, b = 0, a = 0;
   for (let sy = 0; sy < S; sy++) {
     for (let sx = 0; sx < S; sx++) {
-      const px = (x + (sx + 0.5) / S) / size;
-      const py = (y + (sy + 0.5) / S) / size;
+      // 縦長の絵では、図柄を正方形として中央に置く（縦に引き伸ばさない）
+      const side = Math.min(size, imgH);
+      const px = (x + (sx + 0.5) / S - (size - side) / 2) / side;
+      const py = (y + (sy + 0.5) / S - (imgH - side) / 2) / side;
       let c = null;
       for (const ch of CHEVRONS) {
         if (chevron(px, py, 0.5, ch.cy, HW, H, T)) { c = ink ?? ch.color; break; }
@@ -106,11 +109,12 @@ const out = 'com.kanade0525.combocounter.sdPlugin/imgs';
 mkdirSync(out, { recursive: true });
 
 const files = [
-  // キーに最初から出る絵と、プラグインの顔。下地あり・段の色
+  // キーに最初から出る絵。下地あり・段の色
   ['key', 72, { plate: true, ink: null }],
   ['key@2x', 144, { plate: true, ink: null }],
-  ['plugin', 72, { plate: true, ink: null }],
-  ['plugin@2x', 144, { plate: true, ink: null }],
+  // プラグインの顔。Marketplace の規定は 256×256 と、高DPI用の 512×512
+  ['plugin', 256, { plate: true, ink: null }],
+  ['plugin@2x', 512, { plate: true, ink: null }],
   // 一覧に並ぶ小さい絵。背景は透明・白単色（明るい地でも暗い地でも読める）
   ['action', 20, { plate: false, ink: [0xff, 0xff, 0xff] }],
   ['action@2x', 40, { plate: false, ink: [0xff, 0xff, 0xff] }],
@@ -118,6 +122,7 @@ const files = [
   ['category@2x', 56, { plate: false, ink: [0xff, 0xff, 0xff] }],
 ];
 for (const [name, size, opts] of files) {
-  writeFileSync(`${out}/${name}.png`, png(size, make(size, opts)));
+  const h = opts.height ?? size;
+  writeFileSync(`${out}/${name}.png`, png(size, make(size, opts), h));
 }
 console.log(`アイコンを${files.length}枚つくった`);
