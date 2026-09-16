@@ -13,14 +13,17 @@ import streamDeck, { SingletonAction } from '@elgato/streamdeck';
 import { ComboState } from './combo-state.js';
 import { comboImage, dataUri, needsPermissionImage, MODE_LABEL } from './draw.js';
 import { InputSource } from './input-source.js';
+import { RateLimiter } from './rate-limit.js';
 
 const ROOT = join(import.meta.dirname, '..');
 const logger = streamDeck.logger;
 
-const TICK = 33;       // 判定の刻み。描画は絵が変わった時だけなので、これがそのまま fps にはならない
-const POP_MS = 130;    // 1打ごとの弾み
-const FLASH_MS = 450;  // 段が上がった瞬間の演出
-const BREAK_MS = 700;  // 切れたことを見せる時間
+// Marketplace の規定で、キーの絵の更新は毎秒10回を超えてはならない。
+// 打鍵は毎秒10回を軽く超えるので、送信そのものに関門を置いて守らせる。
+const MIN_INTERVAL = 100;  // 送信と送信の最小間隔。毎秒10回の上限そのもの
+const TICK = 100;          // 判定の刻み。関門と同じにしておけば無駄打ちが出ない
+const FLASH_MS = 400;      // 段が上がった瞬間の演出。4コマ
+const BREAK_MS = 600;      // 切れたことを見せる時間。6コマ
 
 const state = new ComboState({ window: 3000 });
 let mode = 0;          // 0=コンボ 1=最高 2=今日 3=毎分
@@ -28,17 +31,22 @@ let permitted = true;
 
 // ---- 描画の制御 ----
 //
-// 実測で Stream Deck の CPU は送信レートにほぼ比例する（1fps あたり 0.2% 強）。
-// そのため「絵が変わった時だけ送る」を原則にし、演出中だけ例外的に毎フレーム描く。
-// 手が止まって演出も終われば送信を完全に止め、CPU を平常値へ戻す。
+// 二段構えにしてある。
+//   1. 絵が変わった時だけ描く（同じ絵を送り直さない）
+//   2. それでも毎秒10回を超えないよう、送信に関門を通す
+//
+// 1 だけでは足りない。打鍵のたびに数字が変わるので、速く打てば絵は毎秒10回以上変わる。
+// 2 の関門は、送れない間の要求を捨てずに最新の1件だけ覚えておき、間隔が空いたら送る。
+// だから速く打っても、最後に打った数字は必ず画面に出る。
+//
+// 実測では Stream Deck の CPU は送信レートにほぼ比例し、10fps なら約2%で収まる。
 
 let ticker = null;
-let tickerMs = 0;
 let lastSignature = '';
 
 const elapsed = (at) => (at ? (Date.now() - at) : Infinity);
 const animating = () =>
-  elapsed(state.popAt) < POP_MS || elapsed(state.flashAt) < FLASH_MS || elapsed(state.brokenAt) < BREAK_MS;
+  elapsed(state.flashAt) < FLASH_MS || elapsed(state.brokenAt) < BREAK_MS;
 
 const view = () => {
   const broken = elapsed(state.brokenAt) < BREAK_MS;
@@ -51,57 +59,70 @@ const view = () => {
     brokenValue: state.brokenValue,
     broken,
     breakT: broken ? elapsed(state.brokenAt) / BREAK_MS : 1,
-    popT: Math.min(1, elapsed(state.popAt) / POP_MS),
     flashT: Math.min(1, elapsed(state.flashAt) / FLASH_MS),
     ratio: mode === 0 && !broken ? state.remaining() : 0,
     isRecord: state.isRecord,
   };
 };
 
-// バーは20段に量子化する。こうすると手を止めている間の再描画が3秒で約20回（≒7fps）に収まる
+// 絵が変わったかどうかの判定。バーは20段に、演出はコマ番号に量子化してあるので、
+// 見た目が同じなら同じ文字列になる
 const signature = () => {
   const v = view();
   const step = Math.ceil(v.ratio * 20);
-  return `${mode}:${state.combo}:${state.best}:${state.todayTotal}:${state.perMinute}:${step}`;
+  const flashFrame = v.flashT < 1 ? Math.floor(v.flashT * 4) : -1;
+  const breakFrame = v.broken ? Math.floor(v.breakT * 3) : -1;
+  return `${mode}:${state.combo}:${state.best}:${state.todayTotal}:${state.perMinute}`
+       + `:${step}:${flashFrame}:${breakFrame}`;
 };
+
+// 送信の時刻を直近1秒だけ覚えておき、規定（毎秒10回）を超えたら警告を残す。
+// 関門がある以上ここに来ることは無いはずで、来たら関門が壊れている。
+// 超えない限り何も書かないので、本番に置いたままにできる。
+const RATE_LIMIT_PER_SEC = 10;
+const sentAt = [];
+const noteSend = (t) => {
+  sentAt.push(t);
+  while (sentAt.length && t - sentAt[0] >= 1000) sentAt.shift();
+  if (sentAt.length > RATE_LIMIT_PER_SEC) {
+    logger.warn(`送信が規定を超えた: 直近1秒で${sentAt.length}件`);
+  }
+};
+
+// 送信の関門。毎秒10回を超えさせない
+const limiter = new RateLimiter({
+  minIntervalMs: MIN_INTERVAL,
+  send: (image) => {
+    for (const action of combo.actions) action.setImage(image);
+
+  },
+});
 
 const paint = (force = false) => {
   if (!permitted) return;
-  if (!force && !animating()) {
-    const sig = signature();
-    if (sig === lastSignature) return;
-    lastSignature = sig;
-  }
-  const image = dataUri(comboImage(view()));
-  for (const action of combo.actions) action.setImage(image);
-};
-
-const setRate = (ms) => {
-  if (ticker && tickerMs === ms) return;
-  if (ticker) clearInterval(ticker);
-  ticker = setInterval(tick, ms);
-  tickerMs = ms;
+  const sig = signature();
+  if (!force && sig === lastSignature) return;
+  lastSignature = sig;
+  limiter.request(dataUri(comboImage(view())));
 };
 
 const stopTicker = () => {
   if (ticker) clearInterval(ticker);
   ticker = null;
-  tickerMs = 0;
 };
 
 function tick() {
   const { broke } = state.tick();
   if (broke) logger.info(`コンボ切れ ${state.brokenValue}`);
-  // 段が上がった瞬間だけ 60fps に上げる。実測で約12%だが 0.45 秒なので許容できる
-  setRate(elapsed(state.flashAt) < FLASH_MS ? 16 : TICK);
   paint();
+  // コンボも演出も直近の操作も無いなら、動かす理由が無い。止めて CPU を平常値へ戻す
   if (state.combo === 0 && !animating() && state.perMinute === 0) {
     stopTicker();
     paint(true);
   }
 }
 
-const wake = () => { if (!ticker) setRate(TICK); };
+const wake = () => { if (!ticker) ticker = setInterval(tick, TICK); };
 
 // ---- 記録の保存。打鍵のたびに書かず、5秒に1回まとめる ----
 let saveTimer = null;

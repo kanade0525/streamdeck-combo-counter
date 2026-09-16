@@ -41,13 +41,14 @@ export const comboImage = (v) => {
   else if (v.broken) value = v.brokenValue;
 
   const text = String(value);
-  // 弾み: 打った瞬間に少しだけ膨らませて戻す。戻りを二次で効かせると打鍵に吸い付く
-  const pop = v.popT < 1 ? 1 + 0.16 * (1 - v.popT) ** 2 : 1;
-  const size = fontFor(text) * pop;
+  const size = fontFor(text);
 
-  // 切れた時は、数字を下にずらしながら背景色へ溶かす
-  const numberFill = v.broken ? mix(lv.fill, BG, v.breakT * 0.85) : INK;
-  const numberY = 40 + size * 0.36 + (v.broken ? v.breakT * 9 : 0);
+  // 切れた時は、数字を段の色から背景色へ落とす。
+  // 位置を動かす演出はやめた（コマ数が足りず、揺れて見えるだけになる）
+  const BREAK_STEPS = [0.15, 0.45, 0.75];
+  const bi = Math.min(Math.floor(v.breakT * BREAK_STEPS.length), BREAK_STEPS.length - 1);
+  const numberFill = v.broken ? mix(lv.fill, BG, BREAK_STEPS[bi]) : INK;
+  const numberY = 40 + size * 0.36;
 
   // 上段。数字を見れば分かるので COMBO の文字は置かず、空いた分を最高記録に使う。
   // 切れた瞬間だけ同じ場所を BREAK に差し替える（0.7秒だけなので場所を奪い合わない）
@@ -57,10 +58,20 @@ export const comboImage = (v) => {
     : '#8a949e';
   const topWeight = v.isRecord || v.broken ? 700 : 500;
 
-  // 段が上がった瞬間、輪が外へ広がって消える
-  const flash = v.flashT < 1
-    ? `<circle cx="36" cy="40" r="${(10 + 34 * v.flashT).toFixed(1)}" fill="none"
-             stroke="${mix(lv.fill, BG, v.flashT)}" stroke-width="${(4 * (1 - v.flashT)).toFixed(2)}"/>`
+  // 段が上がった瞬間の輪。毎秒10コマが上限なので、滑らかに広げるのではなく
+  // 4段の決まった大きさを順に出す。コマ送りだと分かる形にした方が、
+  // 中途半端に滑らかなものより「決まった」感じが出る
+  const FLASH_FRAMES = [
+    { r: 14, w: 4.0, t: 0.00 },
+    { r: 24, w: 3.0, t: 0.30 },
+    { r: 34, w: 2.0, t: 0.60 },
+    { r: 44, w: 1.5, t: 0.85 },
+  ];
+  const fi = Math.floor(v.flashT * FLASH_FRAMES.length);
+  const f = v.flashT < 1 ? FLASH_FRAMES[Math.min(fi, FLASH_FRAMES.length - 1)] : null;
+  const flash = f
+    ? `<circle cx="36" cy="40" r="${f.r}" fill="none"
+             stroke="${mix(lv.fill, BG, f.t)}" stroke-width="${f.w}"/>`
     : '';
 
   // 記録を更新している間は下地をわずかに持ち上げ、盤面で見て分かるようにする
