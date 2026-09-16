@@ -5,6 +5,6 @@ set -e
 cd "$(dirname "$0")/.."
 sh scripts/build.sh
 (cd com.kanade0525.combocounter.sdPlugin && npm install --omit=dev)
-npx --yes @elgato/cli@latest pack com.kanade0525.combocounter.sdPlugin --output .
+npx --yes @elgato/cli@latest pack com.kanade0525.combocounter.sdPlugin --output . --force
 echo "できた:"
 ls -la *.streamDeckPlugin

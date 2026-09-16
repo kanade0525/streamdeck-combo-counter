@@ -2,7 +2,7 @@
   "SDKVersion": 2,
   "UUID": "com.kanade0525.combocounter",
   "Name": "Combo Counter",
-  "Version": "0.1.0.0",
+  "Version": "0.2.0.0",
   "Author": "kanade ishida",
   "Description": "Counts your keystrokes and clicks, and shows how many you have made without pausing. Only the count is measured; which key was pressed is never read.",
   "Category": "Combo Counter",
