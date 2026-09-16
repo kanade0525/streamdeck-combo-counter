@@ -33,7 +33,7 @@
 ## 要るもの
 
 - macOS 12 以降
-- Stream Deck 6.5 以降（ボタンのみの機種で動きます）
+- Stream Deck 6.9 以降（ボタンのみの機種で動きます）
 - 入力監視の許可
 - Xcode Command Line Tools（ビルドに使います。無料）
 
