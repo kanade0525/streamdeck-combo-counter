@@ -64,3 +64,12 @@ test('色の補間が両端と中間で正しい', () => {
   assert.equal(mix('#000000', '#ffffff', 0.5), '#808080');
   assert.equal(mix('#000000', '#ffffff', -5), '#000000', '範囲外は丸める');
 });
+
+test('残り時間のバーはコンボ表示の時だけ出る', () => {
+  const withBar = comboImage({ ...base, mode: 0 });
+  assert.match(withBar, /y="58"/, 'コンボ表示にはバーがある');
+  for (const mode of [1, 2, 3]) {
+    const svg = comboImage({ ...base, mode });
+    assert.ok(!svg.includes('y="58"'), `表示${mode}にはバーを置かない`);
+  }
+});

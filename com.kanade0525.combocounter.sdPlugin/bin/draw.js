@@ -74,6 +74,13 @@ export const comboImage = (v) => {
              stroke="${mix(lv.fill, BG, f.t)}" stroke-width="${f.w}"/>`
     : '';
 
+  // 残り時間のバーはコンボ表示の時だけ置く。
+  // 他の表示（最高・今日・毎分）では時間の意味が無いので、枠だけ残すと嘘になる
+  const bar = v.mode === 0
+    ? `<rect x="8" y="58" width="56" height="5" rx="2.5" fill="${lv.dim}"/>
+  <rect x="8" y="58" width="${(56 * v.ratio).toFixed(1)}" height="5" rx="2.5" fill="${lv.fill}"/>`
+    : '';
+
   // 記録を更新している間は下地をわずかに持ち上げ、盤面で見て分かるようにする
   const ground = v.isRecord && v.mode === 0 ? mix(BG, lv.fill, 0.1) : BG;
 
@@ -84,8 +91,7 @@ export const comboImage = (v) => {
         font-size="9" font-weight="${topWeight}" fill="${topFill}">${topText}</text>
   <text x="36" y="${numberY.toFixed(1)}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
         font-size="${size.toFixed(1)}" font-weight="700" fill="${numberFill}">${text}</text>
-  <rect x="8" y="58" width="56" height="5" rx="2.5" fill="${lv.dim}"/>
-  <rect x="8" y="58" width="${(56 * v.ratio).toFixed(1)}" height="5" rx="2.5" fill="${lv.fill}"/>
+  ${bar}
 </svg>`;
 };
 
