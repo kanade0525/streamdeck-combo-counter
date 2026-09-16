@@ -28,18 +28,22 @@
 
 - スクロール（トラックパッドの慣性で毎秒何十件も飛ぶため）
 - 修飾キー単体（Shift・Control・Option など）
-- 押しっぱなしの自動リピート（Windows のみ）
+- 押しっぱなしの自動リピート（Windows 版のみ。macOS では数えます）
 
 ## 要るもの
 
-| | macOS | Windows |
-| --- | --- | --- |
-| OS | 12 以降 | 10 以降 |
-| Stream Deck | 6.5 以降 | 6.5 以降 |
-| 権限 | 入力監視の許可 | 不要 |
-| ビルド | Xcode Command Line Tools | 不要 |
+- macOS 12 以降
+- Stream Deck 6.5 以降（ボタンのみの機種で動きます）
+- 入力監視の許可
+- Xcode Command Line Tools（ビルドに使います。無料）
 
-ボタンのみの機種で動きます。
+### Windows について
+
+**Windows 版のヘルパは書いてありますが、実機で検証していないので、
+プラグインの対応OSからは外してあります。** 動かしてみたい方は
+[`bin/tap-counter.ps1`](com.kanade0525.combocounter.sdPlugin/bin/tap-counter.ps1)
+と manifest の `OS` に windows を足せば試せます。動いた・動かないの報告は
+Issue で歓迎します。
 
 ## 入れる
 
@@ -115,7 +119,7 @@ tests/
 
 ## 既知の制約
 
-- Windows 版は実機で検証していません
+- Windows 版は実機で検証していないため、対応OSから外しています
 - macOS で Secure Input が有効な間（パスワード欄など）は打鍵を拾えません
 - 署名していないので、ビルド済みのものを配ると Gatekeeper に止められます
 
