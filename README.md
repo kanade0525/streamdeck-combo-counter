@@ -61,26 +61,22 @@ Stream Deck を再起動し、**Combo Counter > コンボカウンタ** をキ�
 ### ダウンロードして入れた場合
 
 [Releases](https://github.com/kanade0525/streamdeck-combo-counter/releases) の
-`.streamDeckPlugin` からも入れられますが、**署名していないため、そのままでは動きません。**
-入力を数えるヘルパに隔離属性が付き、macOS が実行を止めます。
-キーには `BLOCKED` と出ます（押すとこの説明が開きます）。
+`.streamDeckPlugin` からも入れられます。
 
-隔離属性を外せば動きます。
+`.streamDeckPlugin` は中身が zip で、**権限が保存されません。**
+入力を数えるヘルパの実行ビットが落ちた状態で入るため、
+そのままでは起動できません（`EACCES`）。
+これはプラグインが**起動時に自分で付け直す**ので、利用者の作業は要りません。
 
-```sh
-xattr -dr com.apple.quarantine \
-  "$HOME/Library/Application Support/com.elgato.StreamDeck/Plugins/com.kanade0525.combocounter.sdPlugin"
-```
-
-そのあと Stream Deck を再起動し、入力監視の許可を承認してください。
-
-ヘルパが動くかどうかは直接確かめられます。`READY` と出れば正常です。
+もし何かの理由で起動できない場合、キーに `BLOCKED` と出ます。
+押すとこの説明が開きます。ヘルパが動くかどうかは直接確かめられます。
+`READY` と出れば正常です。
 
 ```sh
 "$HOME/Library/Application Support/com.elgato.StreamDeck/Plugins/com.kanade0525.combocounter.sdPlugin/bin/tap-counter"
 ```
 
-**手元でビルドした場合（上の手順）は隔離属性が付かないので、この作業は要りません。**
+`NOPERM` と出た場合は入力監視の許可が必要です。承認して Stream Deck を再起動してください。
 
 ## 仕組み
 
@@ -141,8 +137,8 @@ tests/
 
 - Windows 版は実機で検証していないため、対応OSから外しています
 - macOS で Secure Input が有効な間（パスワード欄など）は打鍵を拾えません
-- **署名していないので、ダウンロードして入れたものはそのままでは動きません**
-  （上の「ダウンロードして入れた場合」を参照）。手元でビルドすれば問題ありません
+- 署名していません。ヘルパは署名なしでも動きますが、
+  配布物の権限が落ちる問題があるため、起動時に実行ビットを付け直しています
 
 ## ライセンス
 
