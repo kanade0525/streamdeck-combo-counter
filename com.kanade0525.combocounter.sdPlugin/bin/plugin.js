@@ -6,12 +6,12 @@
 //
 // ビルドステップは入れていない。SDKは素の ES modules のまま読み込む。
 
-import { exec } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { join } from 'node:path';
 import streamDeck, { SingletonAction } from '@elgato/streamdeck';
 
 import { ComboState } from './combo-state.js';
-import { comboImage, dataUri, needsPermissionImage, MODE_LABEL } from './draw.js';
+import { comboImage, dataUri, needsPermissionImage, helperBlockedImage, MODE_LABEL } from './draw.js';
 import { InputSource } from './input-source.js';
 import { RateLimiter } from './rate-limit.js';
 
@@ -28,6 +28,10 @@ const BREAK_MS = 600;      // 切れたことを見せる時間。6コマ
 const state = new ComboState({ window: 3000 });
 let mode = 0;          // 0=コンボ 1=最高 2=今日 3=毎分
 let permitted = true;
+let helperBlocked = false;   // ヘルパを起動できていない（署名なしの配布物が止められた等）
+
+// 直し方を書いた場所。BLOCKED のキーを押したら開く
+const HELP_URL = 'https://github.com/kanade0525/streamdeck-combo-counter#入れる';
 
 // ---- 描画の制御 ----
 //
@@ -99,7 +103,7 @@ const limiter = new RateLimiter({
 });
 
 const paint = (force = false) => {
-  if (!permitted) return;
+  if (!permitted || helperBlocked) return;
   const sig = signature();
   if (!force && sig === lastSignature) return;
   lastSignature = sig;
@@ -147,8 +151,14 @@ const source = new InputSource({
   },
   onPermission: (granted) => {
     permitted = granted;
+    helperBlocked = false;
     if (granted) paint(true);
     else for (const action of combo.actions) action.setImage(dataUri(needsPermissionImage()));
+  },
+  onBlocked: () => {
+    helperBlocked = true;
+    logger.error('ヘルパを起動できないため、数えられない');
+    for (const action of combo.actions) action.setImage(dataUri(helperBlockedImage()));
   },
 });
 
@@ -159,14 +169,20 @@ class ComboAction extends SingletonAction {
 
   onWillAppear(ev) {
     ev.action.setTitle('');
-    if (!permitted) ev.action.setImage(dataUri(needsPermissionImage()));
+    if (helperBlocked) ev.action.setImage(dataUri(helperBlockedImage()));
+    else if (!permitted) ev.action.setImage(dataUri(needsPermissionImage()));
     else ev.action.setImage(dataUri(comboImage(view())));
   }
 
   onKeyUp() {
+    // 起動できていない時は、直し方を書いた場所を開く
+    if (helperBlocked) {
+      execFile('open', [HELP_URL]);
+      return;
+    }
     // 権限が無い時は、押せば解決できるようにシステム設定を直接開く
     if (!permitted) {
-      exec('open "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent"');
+      execFile('open', ['x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent']);
       return;
     }
     // 短押しで表示を切替える。長押しには何も割り当てない（触れただけで記録が消える事故を避ける）

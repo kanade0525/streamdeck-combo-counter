@@ -18,24 +18,36 @@ export class InputSource {
    * @param {(granted: boolean) => void} opts.onPermission 権限の有無が分かった時に呼ばれる
    * @param {{info: Function, error: Function}} opts.logger
    */
-  constructor({ binary, onInput, onPermission, logger }) {
+  constructor({ binary, onInput, onPermission, onBlocked, logger }) {
     this.binary = binary;
     this.onInput = onInput;
     this.onPermission = onPermission;
+    this.onBlocked = onBlocked ?? (() => {});
     this.logger = logger;
     this.child = null;
     this.granted = true;
     this.stopped = false;
+    // 起動してすぐ落ちた回数。ダウンロードした配布物は隔離属性で実行を止められるため、
+    // 起動できないこと自体を利用者に伝える必要がある
+    this.instantExits = 0;
+    this.sawReady = false;
   }
 
   start() {
     if (this.stopped) return;
+    const startedAt = Date.now();
     try {
       this.child = spawn(this.binary.command, this.binary.args, { stdio: ['ignore', 'pipe', 'pipe'] });
     } catch (e) {
       this.logger.error('ヘルパを起動できない', e);
+      this.onBlocked();
       return;
     }
+    // 起動そのものに失敗した場合（実行権が無い、隔離属性で止められた等）
+    this.child.on('error', (e) => {
+      this.logger.error(`ヘルパを起動できない: ${e.code ?? ''} ${e.message}`);
+      this.onBlocked();
+    });
 
     let buf = '';
     this.child.stdout.on('data', (chunk) => {
@@ -54,15 +66,31 @@ export class InputSource {
         this.onPermission(false);
       } else if (text.includes('READY')) {
         this.granted = true;
+        this.sawReady = true;
+        this.instantExits = 0;
         this.onPermission(true);
       }
       this.logger.info(`ヘルパ: ${text}`);
     });
 
-    this.child.on('exit', (code) => {
+    this.child.on('exit', (code, signal) => {
       this.child = null;
       if (this.stopped) return;
-      // 権限待ちの時は間隔を空ける。落ちただけならすぐ戻す
+
+      // READY を一度も出さずに即死し続けるなら、起動そのものができていない。
+      // 配布物をダウンロードで入れた場合、隔離属性で実行を止められるのが典型
+      if (!this.sawReady && Date.now() - startedAt < 500) {
+        this.instantExits += 1;
+        if (this.instantExits >= 3) {
+          this.logger.error(
+            `ヘルパが起動できない（code=${code} signal=${signal}）。`
+            + '配布物をダウンロードで入れた場合、隔離属性で実行が止められている可能性がある',
+          );
+          this.onBlocked();
+          return;   // 無言で回り続けない
+        }
+      }
+
       const wait = this.granted ? 2000 : 10000;
       this.logger.info(`ヘルパ終了 code=${code}。${wait}ms後に起動し直す`);
       setTimeout(() => this.start(), wait);

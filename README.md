@@ -58,9 +58,29 @@ Stream Deck を再起動し、**Combo Counter > コンボカウンタ** をキ�
 初回は入力監視の許可を求められるので、許可してからもう一度 Stream Deck を再起動してください。
 キーに鍵の絵が出ているときは、そのキーを押すと設定画面が開きます。
 
+### ダウンロードして入れた場合
+
 [Releases](https://github.com/kanade0525/streamdeck-combo-counter/releases) の
-`.streamDeckPlugin` からも入れられますが、署名していないため macOS では Gatekeeper に止められます。
-上のビルド手順なら隔離属性が付かないのでそのまま動きます。
+`.streamDeckPlugin` からも入れられますが、**署名していないため、そのままでは動きません。**
+入力を数えるヘルパに隔離属性が付き、macOS が実行を止めます。
+キーには `BLOCKED` と出ます（押すとこの説明が開きます）。
+
+隔離属性を外せば動きます。
+
+```sh
+xattr -dr com.apple.quarantine \
+  "$HOME/Library/Application Support/com.elgato.StreamDeck/Plugins/com.kanade0525.combocounter.sdPlugin"
+```
+
+そのあと Stream Deck を再起動し、入力監視の許可を承認してください。
+
+ヘルパが動くかどうかは直接確かめられます。`READY` と出れば正常です。
+
+```sh
+"$HOME/Library/Application Support/com.elgato.StreamDeck/Plugins/com.kanade0525.combocounter.sdPlugin/bin/tap-counter"
+```
+
+**手元でビルドした場合（上の手順）は隔離属性が付かないので、この作業は要りません。**
 
 ## 仕組み
 
@@ -121,7 +141,8 @@ tests/
 
 - Windows 版は実機で検証していないため、対応OSから外しています
 - macOS で Secure Input が有効な間（パスワード欄など）は打鍵を拾えません
-- 署名していないので、ビルド済みのものを配ると Gatekeeper に止められます
+- **署名していないので、ダウンロードして入れたものはそのままでは動きません**
+  （上の「ダウンロードして入れた場合」を参照）。手元でビルドすれば問題ありません
 
 ## ライセンス
 

@@ -107,5 +107,20 @@ export const needsPermissionImage = () => `<svg xmlns="http://www.w3.org/2000/sv
         font-size="8" fill="${MUTED}">press to open</text>
 </svg>`;
 
+/**
+ * ヘルパが起動できない時。
+ * 配布物をダウンロードで入れると、署名していないため macOS が実行を止める。
+ * 何も出さずに 0 のまま止まると原因が分からないので、起動できていないことを出す。
+ */
+export const helperBlockedImage = () => `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72">
+  <rect width="72" height="72" rx="10" fill="${BG}"/>
+  <circle cx="36" cy="27" r="11" fill="none" stroke="#ff5f56" stroke-width="3"/>
+  <line x1="28" y1="35" x2="44" y2="19" stroke="#ff5f56" stroke-width="3"/>
+  <text x="36" y="52" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
+        font-size="9" font-weight="700" fill="#ff5f56">BLOCKED</text>
+  <text x="36" y="63" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
+        font-size="7.5" fill="${MUTED}">press for help</text>
+</svg>`;
+
 export const dataUri = (svg) =>
   `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;

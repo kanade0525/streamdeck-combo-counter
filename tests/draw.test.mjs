@@ -2,7 +2,7 @@
 // 「壊れた SVG を出さない」「値が絵に反映される」の2点だけを押さえる。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { comboImage, needsPermissionImage, mix } from '../com.kanade0525.combocounter.sdPlugin/bin/draw.js';
+import { comboImage, needsPermissionImage, helperBlockedImage, mix } from '../com.kanade0525.combocounter.sdPlugin/bin/draw.js';
 
 const base = {
   mode: 0, combo: 7, best: 42, todayTotal: 1234, perMinute: 60, brokenValue: 0,
@@ -72,4 +72,11 @@ test('残り時間のバーはコンボ表示の時だけ出る', () => {
     const svg = comboImage({ ...base, mode });
     assert.ok(!svg.includes('y="58"'), `表示${mode}にはバーを置かない`);
   }
+});
+
+test('ヘルパが起動できない時の画面が壊れていない', () => {
+  const svg = helperBlockedImage();
+  wellFormed(svg);
+  assert.match(svg, />BLOCKED</);
+  assert.match(svg, />press for help</, '押せば直し方が分かることを出す');
 });
